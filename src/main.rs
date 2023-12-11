@@ -3,9 +3,9 @@ use prism::{parse as parse_ruby, ParseResult};
 use ropey::Rope;
 use std::collections::HashMap;
 use std::path::Path;
-use std::{default, env, fs, io};
-use tokio::fs::File;
-use tokio::io::BufReader;
+use std::{default, env, fs, fs::File, io, io::BufReader};
+// use tokio::fs::File;
+// use tokio::io::BufReader;
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
@@ -14,8 +14,8 @@ use walkdir::WalkDir;
 #[derive(Debug)]
 struct Backend {
     client: Client,
-    root_path: Option<String>,
-    files: DashMap<String, io::Result<Rope>>,
+    root_path: String,
+    files: DashMap<String, Rope>,
     // asts: DashMap<String, ParseResult<'a>>,
 }
 
@@ -27,13 +27,12 @@ impl LanguageServer for Backend {
             .await;
 
         if let Some(root_path) = params.root_path {
+            // self.root_path.push_str(root_path.as_str());
             let _ = visit_project_files(Path::new(&root_path), |path| {
                 // self.files
                 //     .insert(path.to_str().unwrap().to_owned(), fs::read(path).unwrap());
-                let mut text =
-                    Rope::from_reader(BufReader::new(File::open(path).unwrap())).unwrap();
-                self.files
-                    .insert(path.to_str().unwrap().to_owned(), fs::read(path).unwrap());
+                let text = Rope::from_reader(BufReader::new(File::open(path).unwrap())).unwrap();
+                self.files.insert(path.to_str().unwrap().to_owned(), text);
             });
         }
 
@@ -41,7 +40,7 @@ impl LanguageServer for Backend {
             capabilities: ServerCapabilities {
                 position_encoding: Some(PositionEncodingKind::UTF8),
                 hover_provider: Some(HoverProviderCapability::Simple(true)),
-                completion_provider: Some(CompletionOptions::default()),
+                // completion_provider: Some(CompletionOptions::default()),
                 definition_provider: Some(OneOf::Left(true)),
                 text_document_sync: Some(TextDocumentSyncCapability::from(
                     TextDocumentSyncKind::INCREMENTAL,
@@ -49,7 +48,7 @@ impl LanguageServer for Backend {
                 ..Default::default()
             },
             server_info: Some(ServerInfo {
-                name: "fast_ruby_lsp".into(),
+                name: "fast-ruby-lsp".into(),
                 version: Some("0.0.1".into()),
             }),
             offset_encoding: Some("utf-8".into()),
@@ -242,24 +241,25 @@ async fn main() {
     //     panic!("missing project_dir env variable!");
     // });
     // let project_path = Path::new(&dir);
-    let project_path = Path::new("D:\\work\\CRM_NEW");
-    let mut files = HashMap::new();
-    let mut asts = HashMap::new();
 
-    let _ = visit_project_files(project_path, |path| {
-        files.insert(path.to_owned(), fs::read(path).unwrap());
-    });
-
-    for k in files.keys() {
-        asts.insert(k.clone(), parse_ruby(files.get(k).unwrap().as_slice()));
-    }
+    // let project_path = Path::new("D:\\work\\CRM_NEW");
+    // let mut files = HashMap::new();
+    // let mut asts = HashMap::new();
+    //
+    // let _ = visit_project_files(project_path, |path| {
+    //     files.insert(path.to_owned(), fs::read(path).unwrap());
+    // });
+    //
+    // for k in files.keys() {
+    //     asts.insert(k.clone(), parse_ruby(files.get(k).unwrap().as_slice()));
+    // }
 
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
 
     let (service, socket) = LspService::new(|client| Backend {
         client: client,
-        root_path: None::<String>,
+        root_path: String::new(),
         files: DashMap::new(),
     });
     Server::new(stdin, stdout, socket).serve(service).await;
