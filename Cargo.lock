@@ -184,9 +184,8 @@ version = "0.1.0"
 dependencies = [
  "dashmap",
  "pest",
- "prism",
- "prism-sys",
  "ropey",
+ "ruby-prism",
  "tokio",
  "tower-lsp",
  "walkdir",
@@ -562,23 +561,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "prism"
-version = "0.18.0"
-dependencies = [
- "prism-sys",
- "serde",
- "serde_yaml",
-]
-
-[[package]]
-name = "prism-sys"
-version = "0.18.0"
-dependencies = [
- "bindgen",
- "cc",
-]
-
-[[package]]
 name = "proc-macro-error"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -666,6 +648,27 @@ checksum = "93411e420bcd1a75ddd1dc3caf18c23155eda2c090631a85af21ba19e97093b5"
 dependencies = [
  "smallvec",
  "str_indices",
+]
+
+[[package]]
+name = "ruby-prism"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "80599ca71078daec6cbac1264fa671cd9883c34d67712f7163db6d0f86045da2"
+dependencies = [
+ "ruby-prism-sys",
+ "serde",
+ "serde_yaml",
+]
+
+[[package]]
+name = "ruby-prism-sys"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "983ac17535cd1fb8500e3bdfb4e9196fecc12752dc0bff4268a2770c9094ea51"
+dependencies = [
+ "bindgen",
+ "cc",
 ]
 
 [[package]]

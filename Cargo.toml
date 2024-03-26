@@ -8,8 +8,9 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.34.0", features = ["full"] }
 tower-lsp = { version = "0.20.0", features = ["proposed"] }
-prism-sys = { path = "./vender/prism/rust/prism-sys" } 
-prism = { path = "./vender/prism/rust/prism" } 
+# ruby-prism-sys = { path = "./vender/prism/rust/ruby-prism-sys" }
+# ruby-prism = { path = "./vender/prism/rust/ruby-prism" }
+ruby-prism = { version = "0.24.0" }
 walkdir = "2.4.0"
 dashmap = "5.1.0"
 ropey = "1.5.0"

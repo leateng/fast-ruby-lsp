@@ -1,3 +1,0 @@
-[submodule "vender/prism"]
-	path = vender/prism
-	url = https://github.com/ruby/prism

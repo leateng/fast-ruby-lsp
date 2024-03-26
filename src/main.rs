@@ -1,6 +1,6 @@
 use dashmap::DashMap;
-use prism::{parse as parse_ruby, ParseResult};
 use ropey::Rope;
+use ruby_prism::{parse as parse_ruby, ParseResult};
 use std::collections::HashMap;
 use std::path::Path;
 use std::{default, env, fs, fs::File, io, io::BufReader};
@@ -15,7 +15,8 @@ use walkdir::WalkDir;
 struct Backend {
     client: Client,
     root_path: String,
-    files: DashMap<String, Rope>,
+    files: DashMap<String, Vec<u8>>,
+    ropes: DashMap<String, Rope>,
     // asts: DashMap<String, ParseResult<'a>>,
 }
 
@@ -29,10 +30,14 @@ impl LanguageServer for Backend {
         if let Some(root_path) = params.root_path {
             // self.root_path.push_str(root_path.as_str());
             let _ = visit_project_files(Path::new(&root_path), |path| {
-                // self.files
-                //     .insert(path.to_str().unwrap().to_owned(), fs::read(path).unwrap());
+                self.files
+                    .insert(path.to_str().unwrap().to_owned(), fs::read(path).unwrap());
                 let text = Rope::from_reader(BufReader::new(File::open(path).unwrap())).unwrap();
-                self.files.insert(path.to_str().unwrap().to_owned(), text);
+                self.ropes.insert(path.to_str().unwrap().to_owned(), text);
+                // self.asts.insert(
+                //     path.clone(),
+                //     parse_ruby(self.files.get(path).unwrap().as_slice()),
+                // );
             });
         }
 
@@ -261,6 +266,8 @@ async fn main() {
         client: client,
         root_path: String::new(),
         files: DashMap::new(),
+        ropes: DashMap::new(),
+        // asts: DashMap::new(),
     });
     Server::new(stdin, stdout, socket).serve(service).await;
 }
